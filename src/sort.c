@@ -315,6 +315,42 @@ cmp_mthd_desc (const void *a, const void *b)
   return strcmp (ib->metrics->method, ia->metrics->method);
 }
 
+/* sort method ascending */
+static int
+cmp_status_hits_asc (const void *a, const void *b)
+{
+  const GHolderItem *ia = a;
+  const GHolderItem *ib = b;
+  int ret = strcmp (ia->metrics->status, ib->metrics->status);
+  if(ret == 0)
+  {
+    ret = ia->metrics->hits - ib->metrics->hits;
+    if(ret == 0)
+    {
+      return strcmp (ia->metrics->request, ib->metrics->request);
+    }
+  }
+  return ret;
+}
+
+/* sort method descending */
+static int
+cmp_status_hits_desc (const void *a, const void *b)
+{
+  const GHolderItem *ia = a;
+  const GHolderItem *ib = b;
+  int ret = strcmp (ib->metrics->status, ia->metrics->status);
+  if(ret == 0)
+  {
+    ret = ib->metrics->hits - ia->metrics->hits;
+    if(ret == 0)
+    {
+      return strcmp (ib->metrics->request, ia->metrics->request);
+    }
+  }
+  return ret;
+}
+
 int
 get_sort_field_enum (const char *str)
 {
@@ -444,6 +480,12 @@ sort_holder_items (GHolderItem * items, int size, GSort sort)
       qsort (items, size, sizeof (GHolderItem), cmp_mthd_desc);
     else
       qsort (items, size, sizeof (GHolderItem), cmp_mthd_asc);
+    break;
+  case SORT_BY_STATUS_HITS:
+    if (sort.sort == SORT_DESC)
+      qsort (items, size, sizeof (GHolderItem), cmp_status_hits_desc);
+    else
+      qsort (items, size, sizeof (GHolderItem), cmp_status_hits_asc);
     break;
   }
 }

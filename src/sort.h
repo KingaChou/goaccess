@@ -47,6 +47,7 @@ typedef enum GSortField_
   SORT_BY_MAXTS,
   SORT_BY_PROT,
   SORT_BY_MTHD,
+  SORT_BY_STATUS_HITS,
 } GSortField;
 
 /* Enumerated sorting order */
