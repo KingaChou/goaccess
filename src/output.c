@@ -1283,6 +1283,17 @@ print_metric_method (FILE * fp, GMetrics * nmetrics)
 }
 
 static void
+print_metric_status (FILE * fp, GMetrics * nmetrics)
+{
+  if (!conf.append_status && nmetrics->status)
+    return;
+
+  fprintf (fp, "<td>");
+  clean_output (fp, nmetrics->status);
+  fprintf (fp, "</td>");
+}
+
+static void
 print_metrics (FILE * fp, GMetrics * nmetrics, int max_hit, int max_vis,
                int sub, const GOutput * output)
 {
@@ -1304,6 +1315,8 @@ print_metrics (FILE * fp, GMetrics * nmetrics, int max_hit, int max_vis,
     print_metric_protocol (fp, nmetrics);
   if (output->method)
     print_metric_method (fp, nmetrics);
+  if (output->status)
+    print_metric_status (fp, nmetrics);
   if (output->data)
     print_metric_data (fp, nmetrics);
 
@@ -1538,6 +1551,8 @@ print_html_common (FILE * fp, GHolder * h, int total, const GPanel * panel,
     fprintf (fp, "<th>%s</th>", MTRC_PROTOCOLS_LBL);
   if (conf.append_method && output->method)
     fprintf (fp, "<th>%s</th>", MTRC_METHODS_LBL);
+  if (conf.append_status && output->status)
+    fprintf (fp, "<th>%s</th>", MTRC_STATUS_LBL);
 
   if (max_hit)
     fprintf (fp, "<th>%s</th>", lbl);

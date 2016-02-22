@@ -445,7 +445,7 @@ add_host_to_holder (GRawDataItem item, GHolder * h, const GPanel * panel)
 static void
 add_data_to_holder (GRawDataItem item, GHolder * h, const GPanel * panel)
 {
-  char *data = NULL, *method = NULL, *protocol = NULL;
+  char *data = NULL, *method = NULL, *protocol = NULL, *status = NULL;
   int visitors = 0;
   uint64_t bw = 0, cumts = 0, maxts = 0;
 
@@ -474,6 +474,11 @@ add_data_to_holder (GRawDataItem item, GHolder * h, const GPanel * panel)
   if (conf.append_protocol) {
     protocol = ht_get_protocol (h->module, item.key);
     h->items[h->idx].metrics->protocol = protocol;
+  }
+
+  if (conf.append_status) {
+    status = ht_get_status (h->module, item.key);
+    h->items[h->idx].metrics->status = status;
   }
 
   if (panel->holder_callback)

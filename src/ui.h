@@ -169,6 +169,8 @@
 #define MTRC_METHODS_SHORT_LBL   "Mtd"
 #define MTRC_PROTOCOLS_LBL       "Protocol"
 #define MTRC_PROTOCOLS_SHORT_LBL "Proto"
+#define MTRC_STATUS_LBL          "Status"
+#define MTRC_STATUS_SHORT_LBL    "Stat"
 #define MTRC_DATA_LBL            "Data"
 
 /* Find Labels */
@@ -292,6 +294,7 @@ typedef struct GOutput_
   int8_t maxts;
   int8_t protocol;
   int8_t method;
+  int8_t status;
   int8_t data;
   int8_t graph;
   int8_t sub_graph;

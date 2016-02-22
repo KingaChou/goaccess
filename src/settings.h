@@ -100,6 +100,7 @@ typedef struct GConf_
   int all_static_files;
   int append_method;
   int append_protocol;
+  int append_status;
   int bandwidth;
   int client_err_to_unique_count;
   int code444_as_404;

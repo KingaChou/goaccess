@@ -129,6 +129,7 @@ typedef struct GParse_
   void (*maxts) (int data_nkey, uint64_t ts, GModule module);
   void (*method) (int data_nkey, const char *method, GModule module);
   void (*protocol) (int data_nkey, const char *proto, GModule module);
+  void (*status) (int data_nkey, const char *status, GModule module);
   void (*agent) (int data_nkey, int agent_nkey, GModule module);
 } GParse;
 

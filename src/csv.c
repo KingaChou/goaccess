@@ -149,6 +149,10 @@ print_csv_sub_items (FILE * fp, GHolder * h, int idx, int valid)
       fprintf (fp, "\"%s\"", iter->metrics->protocol);
     fprintf (fp, ",");
 
+    if (conf.append_status && iter->metrics->status)
+      fprintf (fp, "\"%s\"", iter->metrics->status);
+    fprintf (fp, ",");
+
     fprintf (fp, "\"");
     escape_cvs_output (fp, iter->metrics->data);
     fprintf (fp, "\",");
@@ -188,6 +192,10 @@ print_csv_data (FILE * fp, GHolder * h, int valid)
 
     if (conf.append_protocol && nmetrics->protocol)
       fprintf (fp, "\"%s\"", nmetrics->protocol);
+    fprintf (fp, ",");
+
+    if (conf.append_status && nmetrics->status)
+      fprintf (fp, "\"%s\"", nmetrics->status);
     fprintf (fp, ",");
 
     fprintf (fp, "\"");

@@ -162,6 +162,9 @@ print_json_block (FILE * fp, GMetrics * nmetrics, char *sep)
   if (conf.append_protocol && nmetrics->protocol)
     fprintf (fp, "%s\t\"protocol\": \"%s\",\n", sep, nmetrics->protocol);
 
+  if (conf.append_status && nmetrics->status)
+    fprintf (fp, "%s\t\"status\": \"%s\",\n", sep, nmetrics->status);
+
   fprintf (fp, "%s\t\"data\": \"", sep);
   escape_json_output (fp, nmetrics->data);
   fprintf (fp, "\"");

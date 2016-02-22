@@ -98,6 +98,7 @@ static void insert_cumts (int data_nkey, uint64_t ts, GModule module);
 static void insert_maxts (int data_nkey, uint64_t ts, GModule module);
 static void insert_method (int data_nkey, const char *method, GModule module);
 static void insert_protocol (int data_nkey, const char *proto, GModule module);
+static void insert_status (int data_nkey, const char *proto, GModule module);
 static void insert_agent (int data_nkey, int agent_nkey, GModule module);
 
 /* *INDENT-OFF* */
@@ -115,6 +116,7 @@ static GParse paneling[] = {
     NULL,
     NULL,
     NULL,
+    NULL,
   }, {
     REQUESTS,
     gen_request_key,
@@ -127,6 +129,7 @@ static GParse paneling[] = {
     insert_maxts,
     insert_method,
     insert_protocol,
+    insert_status,
     NULL,
   }, {
     REQUESTS_STATIC,
@@ -141,6 +144,7 @@ static GParse paneling[] = {
     insert_method,
     insert_protocol,
     NULL,
+    NULL,
   }, {
     NOT_FOUND,
     gen_404_key,
@@ -154,6 +158,7 @@ static GParse paneling[] = {
     insert_method,
     insert_protocol,
     NULL,
+    NULL,
   }, {
     HOSTS,
     gen_host_key,
@@ -164,6 +169,7 @@ static GParse paneling[] = {
     insert_bw,
     insert_cumts,
     insert_maxts,
+    NULL,
     NULL,
     NULL,
     insert_agent,
@@ -180,6 +186,7 @@ static GParse paneling[] = {
     insert_method,
     insert_protocol,
     NULL,
+    NULL,
   }, {
     BROWSERS,
     gen_browser_key,
@@ -190,6 +197,7 @@ static GParse paneling[] = {
     insert_bw,
     insert_cumts,
     insert_maxts,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -206,6 +214,7 @@ static GParse paneling[] = {
     NULL,
     NULL,
     NULL,
+    NULL,
   }, {
     REFERRING_SITES,
     gen_ref_site_key,
@@ -219,6 +228,7 @@ static GParse paneling[] = {
     NULL,
     NULL,
     NULL,
+    NULL,
   }, {
     KEYPHRASES,
     gen_keyphrase_key,
@@ -229,6 +239,7 @@ static GParse paneling[] = {
     insert_bw,
     insert_cumts,
     insert_maxts,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -247,6 +258,7 @@ static GParse paneling[] = {
     NULL,
     NULL,
     NULL,
+    NULL,
   },
 #endif
   {
@@ -259,6 +271,7 @@ static GParse paneling[] = {
     insert_bw,
     insert_cumts,
     insert_maxts,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -275,6 +288,7 @@ static GParse paneling[] = {
     NULL,
     NULL,
     NULL,
+    NULL,
   }, {
     VIRTUAL_HOSTS,
     gen_vhost_key,
@@ -285,6 +299,7 @@ static GParse paneling[] = {
     insert_bw,
     insert_cumts,
     insert_maxts,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -364,6 +379,7 @@ init_log (void)
   return glog;
 }
 
+/* malloc a new GLogItem Object and then init it */
 GLogItem *
 init_log_item (GLog * logger)
 {
@@ -1355,6 +1371,12 @@ insert_protocol (int nkey, const char *data, GModule module)
 }
 
 static void
+insert_status (int nkey, const char *data, GModule module)
+{
+  ht_insert_status (module, nkey, data ? data : "---");
+}
+
+static void
 insert_agent (int data_nkey, int agent_nkey, GModule module)
 {
   ht_insert_agent (module, data_nkey, agent_nkey);
@@ -1429,6 +1451,51 @@ gen_unique_req_key (GLogItem * glog)
   return key;
 }
 
+static char *
+gen_unique_req_key_v2 (GLogItem * glog)
+{
+  char *key;
+  size_t s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+
+  /* nothing to do */
+  if (!conf.append_method && !conf.append_protocol && !conf.append_status)
+    return xstrdup (glog->req);
+
+  /* still nothing to do */
+  if (!glog->method && !glog->protocol && !glog->status)
+    return xstrdup (glog->req);
+
+  s1 = strlen (glog->req);
+  if (glog->method)
+    s2 = strlen (glog->method);
+  if (glog->protocol)
+    s3 = strlen (glog->protocol);
+  if (glog->status)
+    s4 = strlen (glog->status);
+
+  /* includes terminating null */
+  key = xmalloc (s1 + s2 + s3 + s4 + 4);
+  /* append request */
+  memcpy (key, glog->req, s1);
+
+  if (glog->method) {
+    key[s1] = '|';
+    memcpy (key + s1 + 1, glog->method, s2 + 1);
+  }
+
+  if (glog->protocol) {
+    key[s1 + s2 + 1] = '|';
+    memcpy (key + s1 + s2 + 2, glog->protocol, s3 + 1);
+  }
+
+  if (glog->status) {
+    key[s1 + s2 + s3 + 2] = '|';
+    memcpy (key + s1 + s2 + s3 + 3, glog->status, s4 + 1);
+  }
+
+  return key;
+}
+
 /* Append the query string to the request, and therefore, it modifies the
  * original glog->req */
 static void
@@ -1491,12 +1558,27 @@ gen_req_key (GKeyData * kdata, GLogItem * glog)
 }
 
 static int
+gen_req_key_v2 (GKeyData * kdata, GLogItem * glog)
+{
+  glog->req_key = gen_unique_req_key_v2 (glog);
+  if (glog->req && glog->qstr)
+    append_query_string (&glog->req, glog->qstr);
+
+  get_kdata (kdata, glog->req_key, glog->req);
+
+  return 0;
+}
+
+static int
 gen_request_key (GKeyData * kdata, GLogItem * glog)
 {
   if (!glog->req || glog->is_404 || glog->is_static)
     return 1;
 
-  return gen_req_key (kdata, glog);
+  if(conf.append_status)
+    return gen_req_key_v2 (kdata, glog);
+  else
+    return gen_req_key (kdata, glog);
 }
 
 static int
@@ -1746,6 +1828,9 @@ set_datamap (GLogItem * glog, GKeyData * kdata, const GParse * parse)
   /* insert protocol */
   if (parse->protocol && conf.append_protocol)
     parse->protocol (kdata->data_nkey, glog->protocol, module);
+  /* insert status */
+  if (parse->status && conf.append_status)
+    parse->status (kdata->data_nkey, glog->status, module);
   /* insert agent */
   if (parse->agent && conf.list_agents)
     parse->agent (kdata->data_nkey, glog->agent_nkey, module);

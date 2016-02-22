@@ -60,6 +60,7 @@
 #define DB_MAXTS     "db_maxts.tcb"
 #define DB_METHODS   "db_methods.tcb"
 #define DB_PROTOCOLS "db_protocols.tcb"
+#define DB_STATUS    "db_status.tcb"
 #define DB_AGENTS    "db_agents.tcb"
 
 /* *INDENT-OFF* */

@@ -90,8 +90,11 @@ set_data_metrics (GMetrics * ometrics, GMetrics ** nmetrics, int valid)
   if (conf.append_method && ometrics->method)
     metrics->method = ometrics->method;
 
-  if (conf.append_method && ometrics->protocol)
+  if (conf.append_protocol && ometrics->protocol)
     metrics->protocol = ometrics->protocol;
+
+  if (conf.append_status && ometrics->status)
+    metrics->status = ometrics->status;
 
   *nmetrics = metrics;
 }

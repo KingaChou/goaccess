@@ -62,3 +62,7 @@ Makefile.in
 *.i*86
 *.x86_64
 *.hex
+
+# Sublime Text
+src/.tags
+src/.tags_sorted_by_file

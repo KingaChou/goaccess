@@ -43,7 +43,7 @@ static char short_options[] = "f:e:p:o:l:"
 #ifdef HAVE_LIBGEOIP
   "g"
 #endif
-  "acirmMhHqdsV";
+  "acirmMhHqdsSV";
 
 /* *INDENT-OFF* */
 struct option long_opts[] = {
@@ -83,6 +83,7 @@ struct option long_opts[] = {
   {"real-os"              , no_argument       , 0 ,  0  } ,
   {"sort-panel"           , required_argument , 0 ,  0  } ,
   {"static-file"          , required_argument , 0 ,  0  } ,
+  {"static-code"          , no_argument       , 0 , 'S' } ,
   {"storage"              , no_argument       , 0 , 's' } ,
   {"dcf"                  , no_argument       , 0 ,  0  } ,
   {"time-format"          , required_argument , 0 ,  0  } ,
@@ -186,6 +187,7 @@ cmd_help (void)
   "                                    manpage for a list of panels/fields.\n"
   "  --static-file=<extension>       - Add static file extension. e.g.: .mp3.\n"
   "                                    Extensions are case sensitive.\n\n"
+  "  --static-code                   - Include HTTP status code if found.\n"
 
 /* GeoIP Options */
 #ifdef HAVE_LIBGEOIP
@@ -330,6 +332,9 @@ read_option_args (int argc, char **argv)
       break;
     case 'M':
       conf.append_method = 1;
+      break;
+    case 'S':
+      conf.append_status = 1;
       break;
     case 'h':
       cmd_help ();

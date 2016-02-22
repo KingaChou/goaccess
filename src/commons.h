@@ -37,7 +37,7 @@
 #define __attribute__(x) /**/
 #endif
 #define GO_UNUSED __attribute__((unused))
-#define GO_VERSION 		"0.9.7"
+#define GO_VERSION 		"0.9.7.1"
 #define GO_WEBSITE 		"http://goaccess.io/"
 struct tm *now_tm;
 
@@ -108,6 +108,7 @@ typedef struct GMetrics
   char *data;
   char *method;
   char *protocol;
+  char *status;
 
   float percent;
   int hits;

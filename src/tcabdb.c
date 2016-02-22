@@ -162,6 +162,7 @@ init_tables (GModule module)
     {MTRC_MAXTS     , DB_MAXTS     , NULL} ,
     {MTRC_METHODS   , DB_METHODS   , NULL} ,
     {MTRC_PROTOCOLS , DB_PROTOCOLS , NULL} ,
+    {MTRC_STATUS    , DB_STATUS    , NULL} ,
     {MTRC_AGENTS    , DB_AGENTS    , NULL} ,
   };
   /* *INDENT-ON* */
@@ -962,6 +963,21 @@ ht_insert_protocol (GModule module, int key, const char *value)
   return ins_is32 (hash, key, value);
 }
 
+/* Insert a status code given an int key and string value.
+ *
+ * On error, or if key exists, -1 is returned.
+ * On success 0 is returned */
+int
+ht_insert_status (GModule module, int key, const char *value)
+{
+  void *hash = get_hash (module, MTRC_STATUS);
+
+  if (!hash)
+    return -1;
+
+  return ins_is32 (hash, key, value);
+}
+
 /* Insert an agent for a hostname given an int key and int value.
  *
  * On error, -1 is returned.
@@ -1227,6 +1243,21 @@ char *
 ht_get_protocol (GModule module, int key)
 {
   void *hash = get_hash (module, MTRC_PROTOCOLS);
+
+  if (!hash)
+    return NULL;
+
+  return get_is32 (hash, key);
+}
+
+/* Get the string value from MTRC_STATUS given an int key.
+ *
+ * On error, NULL is returned.
+ * On success the string value for the given key is returned */
+char *
+ht_get_status (GModule module, int key)
+{
+  khash_t (is32) * hash = get_hash (module, MTRC_STATUS);
 
   if (!hash)
     return NULL;
