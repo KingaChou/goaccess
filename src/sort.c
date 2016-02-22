@@ -38,7 +38,7 @@
 /* *INDENT-OFF* */
 const int sort_choices[][SORT_MAX_OPTS] = {
   {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, SORT_BY_PROT, SORT_BY_MTHD, -1},
+  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, SORT_BY_PROT, SORT_BY_MTHD, SORT_BY_STATUS_HITS, -1},
   {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, SORT_BY_PROT, SORT_BY_MTHD, -1},
   {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, SORT_BY_PROT, SORT_BY_MTHD, -1},
   {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
@@ -65,6 +65,7 @@ static GEnum FIELD[] = {
   {"BY_MAXTS"    , SORT_BY_MAXTS    } ,
   {"BY_PROT"     , SORT_BY_PROT     } ,
   {"BY_MTHD"     , SORT_BY_MTHD     } ,
+  {"BY_STAT_HITS", SORT_BY_STATUS_HITS} ,
 };
 
 static GEnum ORDER[] = {
@@ -321,13 +322,20 @@ cmp_status_hits_asc (const void *a, const void *b)
 {
   const GHolderItem *ia = a;
   const GHolderItem *ib = b;
-  int ret = strcmp (ia->metrics->status, ib->metrics->status);
+  int ret = 0;
+  if(ia->metrics->status && ib->metrics->status)
+  {
+    ret = strcmp (ia->metrics->status, ib->metrics->status);
+  }
   if(ret == 0)
   {
     ret = ia->metrics->hits - ib->metrics->hits;
     if(ret == 0)
     {
-      return strcmp (ia->metrics->request, ib->metrics->request);
+      if(ia->metrics->data && ib->metrics->data)
+      {
+        return strcmp (ia->metrics->data, ib->metrics->data);
+      }
     }
   }
   return ret;
@@ -339,13 +347,20 @@ cmp_status_hits_desc (const void *a, const void *b)
 {
   const GHolderItem *ia = a;
   const GHolderItem *ib = b;
-  int ret = strcmp (ib->metrics->status, ia->metrics->status);
+  int ret = 0;
+  if(ia->metrics->status && ib->metrics->status)
+  {
+    ret = strcmp (ib->metrics->status, ia->metrics->status);
+  }
   if(ret == 0)
   {
     ret = ib->metrics->hits - ia->metrics->hits;
     if(ret == 0)
     {
-      return strcmp (ib->metrics->request, ia->metrics->request);
+      if(ia->metrics->data && ib->metrics->data)
+      {
+        return strcmp (ib->metrics->data, ia->metrics->data);
+      }
     }
   }
   return ret;
@@ -400,6 +415,8 @@ can_sort_module (GModule module, int field)
       continue;
     else if (SORT_BY_MTHD == field && !conf.append_method)
       continue;
+    else if (SORT_BY_STATUS_HITS == field && !conf.append_status)
+      continue;
 
     can_sort = 1;
     break;
@@ -416,7 +433,7 @@ parse_initial_sort (void)
   char module[SORT_MODULE_LEN], field[SORT_FIELD_LEN], order[SORT_ORDER_LEN];
   for (i = 0; i < conf.sort_panel_idx; ++i) {
     view = conf.sort_panels[i];
-    if (sscanf (view, "%15[^','],%11[^','],%4s", module, field, order) != 3)
+    if (sscanf (view, "%15[^','],%12[^','],%4s", module, field, order) != 3)
       continue;
     set_initial_sort (module, field, order);
   }

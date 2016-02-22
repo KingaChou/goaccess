@@ -1329,6 +1329,8 @@ load_sort_win (WINDOW * main_win, GModule module, GSort * sort)
       continue;
     else if (SORT_BY_MTHD == field && !conf.append_method)
       continue;
+    else if (SORT_BY_STATUS_HITS == field && !conf.append_status)
+      continue;
     opts[k++] = field;
     n++;
   }
@@ -1402,6 +1404,12 @@ load_sort_win (WINDOW * main_win, GModule module, GSort * sort)
         menu->items[i].checked = 1;
         menu->idx = i;
       }
+    } else if (SORT_BY_STATUS_HITS == field) {
+      menu->items[i].name = alloc_string ("Status_Hits");
+      if (sort->field == SORT_BY_STATUS_HITS) {
+        menu->items[i].checked = 1;
+        menu->idx = i;
+      }
     }
   }
   post_gmenu (menu);
@@ -1461,6 +1469,8 @@ load_sort_win (WINDOW * main_win, GModule module, GSort * sort)
           sort->field = SORT_BY_PROT;
         else if (strcmp ("Method", menu->items[i].name) == 0)
           sort->field = SORT_BY_MTHD;
+        else if (strcmp ("Status_Hits", menu->items[i].name) == 0)
+          sort->field = SORT_BY_STATUS_HITS;
         quit = 0;
         break;
       }
