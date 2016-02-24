@@ -39,7 +39,7 @@
 #include "error.h"
 #include "util.h"
 
-static char short_options[] = "f:e:p:o:l:"
+static char short_options[] = "f:e:p:o:l:L:"
 #ifdef HAVE_LIBGEOIP
   "g"
 #endif
@@ -335,6 +335,9 @@ read_option_args (int argc, char **argv)
       break;
     case 'S':
       conf.append_status = 1;
+      break;
+    case 'L':
+      conf.message_log = optarg;
       break;
     case 'h':
       cmd_help ();

@@ -81,6 +81,7 @@ typedef struct GConf_
 {
   char *date_format;
   char *debug_log;
+  char *message_log;
   char *geoip_database;
   char *html_report_title;
   char *iconfigfile;

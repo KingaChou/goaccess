@@ -397,6 +397,47 @@ unsigned char icons[] = {
   0x31, 0x34, 0x36, 0x22, 0x3b, 0x0a, 0x7d, 0x0a
 };
 
+FILE *msg_file = NULL;
+unsigned int msg_records[2] = {0};
+
+static void
+gen_mail_msg(GModule module, GMetrics *nmetrics)
+{
+  if(!conf.message_log)
+  {
+    return;
+  }
+  char buf[256] = {0};
+  if(module == REQUESTS && nmetrics->status != NULL && strncmp(nmetrics->status, "2", 1))
+  {
+    if(msg_records[0] == 0)
+    {
+      time(NULL);
+      snprintf(buf, sizeof(buf), "%-10s  %-10s  %-6s  %-6s  %s\n", "hits", "percent", "method", "status", "requests");
+      msg_records[0] = 1;
+    }
+    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%-10d  %-9f%%  %-6s  %-6s  %s\n", nmetrics->hits, nmetrics->percent * 100, nmetrics->method, nmetrics->status, nmetrics->data);
+  }
+  else if(module == STATUS_CODES)
+  {
+    if(msg_records[1] == 0)
+    {
+      snprintf(buf, sizeof(buf), "\n\n%-10s  %-10s  %s\n", "hits", "percent", "status code");
+      msg_records[1] = 1;
+    }
+    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%-10d  %-9f%%  %s\n", nmetrics->hits, nmetrics->percent, nmetrics->data);
+  }
+  if(msg_file == NULL)
+  {
+    msg_file = fopen(conf.message_log, "wt");
+  }
+  if(msg_file != NULL)
+  {
+    fwrite(buf, strlen(buf), 1, msg_file);
+  }
+  // pay attention: need to fclose file, but no do
+}
+
 /* sanitize output with html entities for special chars */
 static void
 clean_output (FILE * fp, char *s)
@@ -1345,6 +1386,10 @@ print_subitems (FILE * fp, GHolder * h, int idx, int total, int max_hit,
     print_metrics (fp, nmetrics, max_hit, max_vis, 1, output);
     print_html_end_tr (fp);
 
+    if(iter->module == STATUS_CODES)
+    {
+      gen_mail_msg(iter->module, nmetrics);
+    }
     free (nmetrics);
   }
 }
@@ -1509,6 +1554,11 @@ print_html_data (FILE * fp, GHolder * h, int total, int max_hit, int max_vis,
     if (h->sub_items_size)
       print_subitems (fp, h, i, total, max_hit, max_vis, output);
 
+    /* for special module, generate mail message */
+    if(h->module == REQUESTS)
+    {
+      gen_mail_msg(h->module, nmetrics);
+    }
     free (nmetrics);
   }
 }
